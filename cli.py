@@ -56,13 +56,10 @@ def cmd_monthly(args):
 def cmd_export(args):
     book = load_csv(args.file)
     out = report.export(book, args.format, path=args.out, month=args.month)
-    if args.format == "text" or args.format == "txt" or args.format == "monthly":
-        if args.out:
-            print("wrote", args.out)
-        else:
-            print(out, end="")
-    else:
+    if args.out:
         print("wrote", args.out)
+    else:
+        print(out, end="")
 
 
 def cmd_split(args):

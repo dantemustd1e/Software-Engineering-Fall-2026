@@ -76,6 +76,14 @@ class ExpenseBookTests(unittest.TestCase):
         finally:
             os.remove(path)
 
+    def test_export_dispatch(self):
+        self.assertEqual(report.export(self.book, "txt"), report.export(self.book, "text"))
+        self.assertIn("Monthly report for 2026-11", report.export(self.book, "monthly", month="2026-11"))
+        with self.assertRaises(ValueError):
+            report.export(self.book, "monthly")
+        with self.assertRaises(ValueError):
+            report.export(self.book, "pdf")
+
 
 if __name__ == "__main__":
     unittest.main()

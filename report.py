@@ -54,17 +54,34 @@ def export_monthly(book, month, path=None):
     return text
 
 
+def _export_csv(book, path, month):
+    if not path:
+        raise ValueError("csv export needs a path")
+    export_csv(book, path)
+    return path
+
+
+def _export_monthly(book, path, month):
+    if month is None:
+        raise ValueError("monthly export needs a month")
+    return export_monthly(book, month, path)
+
+
+def _export_text(book, path, month):
+    return export_text(book, path)
+
+
+EXPORTERS = {
+    "text": _export_text,
+    "txt": _export_text,
+    "csv": _export_csv,
+    "monthly": _export_monthly,
+}
+
+
 def export(book, fmt, path=None, month=None):
-    if fmt == "text" or fmt == "txt":
-        return export_text(book, path)
-    elif fmt == "csv":
-        if not path:
-            raise ValueError("csv export needs a path")
-        export_csv(book, path)
-        return path
-    elif fmt == "monthly":
-        if month is None:
-            raise ValueError("monthly export needs a month")
-        return export_monthly(book, month, path)
-    else:
-        raise ValueError("unknown format: " + str(fmt))
+    try:
+        exporter = EXPORTERS[fmt]
+    except KeyError:
+        raise ValueError("unknown format: " + str(fmt)) from None
+    return exporter(book, path, month)
