@@ -1,0 +1,30 @@
+C-06 Non-atomic save can wipe the whole history
+
+----- code inspection -----
+storage.save_csv opens with mode 'w' (truncate) before writing rows:
+    24	def save_csv(path, book):
+    25	    f = open(path, "w")
+    26	    writer = csv.writer(f)
+    27	    writer.writerow(["date", "category", "amount", "note"])
+    28	    for expense in book.list_all():
+    29	        writer.writerow([expense.date, expense.category, expense.amount, expense.note])
+    30	    f.close()
+
+report.export_csv / export_text / export_monthly also use open(..., 'w'):
+/workspace/sis5/repo/report.py:23:        f = open(path, "w")
+/workspace/sis5/repo/report.py:30:    f = open(path, "w")
+/workspace/sis5/repo/report.py:51:        f = open(path, "w")
+/workspace/sis5/repo/storage.py:10:    f = open(path, "r")
+/workspace/sis5/repo/storage.py:25:    f = open(path, "w")
+
+----- mechanism demo: open(..., 'w') empties the file immediately -----
+before reopen, size= 90 content=
+date,category,amount,note
+2026-11-01,food,1200.0,coffee
+2026-11-03,transport,300.0,bus
+
+after open(..., 'w') and BEFORE any write: size= 0 content= ''
+If a crash happens at this point, the previous history is already gone.
+
+I did not send Ctrl-C or fill the disk, so the live interruption itself is not reproduced.
+I also did not run two add processes at the same time.

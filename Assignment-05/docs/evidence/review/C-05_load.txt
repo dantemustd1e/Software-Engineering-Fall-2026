@@ -1,0 +1,71 @@
+C-05 load_csv is fragile, missing-file handling is inconsistent
+
+----- list in an empty folder (default expenses.csv missing) -----
+$ cd /workspace/sis5/evidence/review/scratch/empty && python /workspace/sis5/repo/cli.py list
+Traceback (most recent call last):
+  File "/workspace/sis5/repo/cli.py", line 116, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/workspace/sis5/repo/cli.py", line 111, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/workspace/sis5/repo/cli.py", line 28, in cmd_list
+    book = load_csv(args.file)
+  File "/workspace/sis5/repo/storage.py", line 10, in load_csv
+    f = open(path, "r")
+FileNotFoundError: [Errno 2] No such file or directory: 'expenses.csv'
+exit code: 1
+
+----- add in the same empty folder (should succeed via load_or_empty) -----
+added: 2026-11-01 food 1200 coffee
+exit code: 0
+files now in empty folder:
+total 12
+drwxr-xr-x 2 box box 4096 Nov 23 16:36 .
+drwxr-xr-x 3 box box 4096 Nov 23 16:36 ..
+-rw-r--r-- 1 box box   58 Nov 23 16:36 expenses.csv
+
+----- total on a copy of sample.csv with a blank line in the middle -----
+file contents:
+date,category,amount,note$
+2026-11-01,food,1200,coffee$
+2026-11-01,food,3500,lunch at canteen$
+2026-11-03,transport,300,bus$
+$
+2026-11-05,food,800.50,snacks$
+2026-11-10,study,4500,printouts and pens$
+2026-11-15,other,2000,sim card$
+2026-10-22,food,1800,dinner$
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c05_blank.csv total
+Traceback (most recent call last):
+  File "/workspace/sis5/repo/cli.py", line 116, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/workspace/sis5/repo/cli.py", line 111, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/workspace/sis5/repo/cli.py", line 35, in cmd_total
+    book = load_csv(args.file)
+  File "/workspace/sis5/repo/storage.py", line 18, in load_csv
+    date, category, amount, note = row
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 4, got 0)
+exit code: 1
+
+----- short row (3 columns) -----
+Traceback (most recent call last):
+  File "/workspace/sis5/repo/cli.py", line 116, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/workspace/sis5/repo/cli.py", line 111, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/workspace/sis5/repo/cli.py", line 35, in cmd_total
+    book = load_csv(args.file)
+  File "/workspace/sis5/repo/storage.py", line 18, in load_csv
+    date, category, amount, note = row
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 4, got 3)
+exit code: 1
+

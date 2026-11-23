@@ -1,0 +1,33 @@
+C-04 Float used for money
+
+$ python -c "print(repr(0.1+0.2))"
+0.30000000000000004
+
+Add 0.1 and 0.2, then compare total vs text export:
+added: 2026-11-01 food 0.1 a
+added: 2026-11-01 food 0.2 b
+$ python cli.py --file ... total
+0.30000000000000004
+$ python cli.py --file ... by-category
+food: 0.30000000000000004
+$ python cli.py --file ... export --format text
+Expense report
+----------------------------------------
+2026-11-01  food                0.10  a
+2026-11-01  food                0.20  b
+----------------------------------------
+Total: 0.30
+
+By category:
+  food: 0.30
+
+Sample file (includes 800.50) — total vs text export:
+$ python cli.py --file sample.csv total
+14100.5
+$ python cli.py --file sample.csv export --format text | grep -E 'Total:|food:'
+Total: 14100.50
+  food: 7300.50
+
+Direct repr of sample total:
+repr(total)= 14100.5
+repr(food)= 7300.5

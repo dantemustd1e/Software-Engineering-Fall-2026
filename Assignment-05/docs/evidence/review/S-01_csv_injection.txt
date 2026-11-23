@@ -1,0 +1,21 @@
+S-01 CSV/formula injection
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/s01.csv add --date 2026-11-01 --category food --amount 1200 --note '=1+1'
+added: 2026-11-01 food 1200 =1+1
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/s01.csv add --date 2026-11-01 --category '=SUM(A1:A9)' --amount 1 --note ok
+added: 2026-11-01 =SUM(A1:A9) 1 ok
+
+saved CSV raw bytes/content:
+date,category,amount,note^M$
+2026-11-01,food,1200.0,=1+1^M$
+2026-11-01,=SUM(A1:A9),1.0,ok^M$
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/s01.csv export --format csv --out /workspace/sis5/evidence/review/scratch/s01_export.csv
+wrote /workspace/sis5/evidence/review/scratch/s01_export.csv
+exported CSV:
+date,category,amount,note^M$
+2026-11-01,food,1200.0,=1+1^M$
+2026-11-01,=SUM(A1:A9),1.0,ok^M$
+
+I did not open the file in Excel, Google Sheets or LibreOffice, so formula execution is unverified.

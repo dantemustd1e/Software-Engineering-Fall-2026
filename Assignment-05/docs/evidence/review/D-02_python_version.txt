@@ -1,0 +1,44 @@
+D-02 Python version claim not enforced
+
+$ python --version
+Python 3.13.5
+$ /usr/bin/python3 --version
+Python 3.13.5
+
+Other python binaries on PATH / common locations:
+/usr/bin/python3
+/usr/bin/python3.13
+/workspace/venv6/bin/python
+/workspace/venv6/bin/python
+/workspace/venv6/bin/python
+/workspace/venv6/bin/python
+/workspace/venv6/bin/python
+/workspace/venv6/bin/python
+/workspace/venv6/bin/python3
+/workspace/venv6/bin/python3
+/workspace/venv6/bin/python3
+/workspace/venv6/bin/python3
+/workspace/venv6/bin/python3
+/workspace/venv6/bin/python3
+/usr/bin/python3
+/bin/python3
+/workspace/venv6/bin/python3.13
+/workspace/venv6/bin/python3.13
+/workspace/venv6/bin/python3.13
+/workspace/venv6/bin/python3.13
+/workspace/venv6/bin/python3.13
+/workspace/venv6/bin/python3.13
+/usr/bin/python3.13
+/bin/python3.13
+
+Repo files that might pin a version:
+ls: cannot access '/workspace/sis5/repo/requirements.txt': No such file or directory
+ls: cannot access '/workspace/sis5/repo/pyproject.toml': No such file or directory
+ls: cannot access '/workspace/sis5/repo/.python-version': No such file or directory
+ls: cannot access '/workspace/sis5/repo/setup.cfg': No such file or directory
+ls: cannot access '/workspace/sis5/repo/Pipfile': No such file or directory
+
+Runtime version check in source?
+./README.md:7:Python 3.10 or newer is required.
+
+I only have Python 3.13.5 on this machine, so I could not rerun the tests under 3.9 or 3.10.

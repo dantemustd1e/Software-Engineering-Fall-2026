@@ -1,0 +1,44 @@
+C-01 Month filter is a prefix match
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c01.csv monthly --month 2026-11
+month: 2026-11
+count: 6
+total: 12300.5
+  food: 5500.5
+  transport: 300.0
+  study: 4500.0
+  other: 2000.0
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c01.csv monthly --month 2026-1
+month: 2026-1
+count: 7
+total: 14100.5
+  food: 7300.5
+  transport: 300.0
+  study: 4500.0
+  other: 2000.0
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c01.csv monthly --month 2026-10
+month: 2026-10
+count: 1
+total: 1800.0
+  food: 1800.0
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c01.csv monthly --month 2026
+month: 2026
+count: 7
+total: 14100.5
+  food: 7300.5
+  transport: 300.0
+  study: 4500.0
+  other: 2000.0
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c01.csv monthly --month ''
+month: 
+count: 7
+total: 14100.5
+  food: 7300.5
+  transport: 300.0
+  study: 4500.0
+  other: 2000.0
+

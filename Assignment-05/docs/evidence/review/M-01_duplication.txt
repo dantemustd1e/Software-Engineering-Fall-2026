@@ -1,0 +1,101 @@
+M-01 Duplicated code and format knowledge
+
+$ grep -n txt *.py
+cli.py:59:    if args.format == "text" or args.format == "txt" or args.format == "monthly":
+report.py:58:    if fmt == "text" or fmt == "txt":
+
+----- diff of the two CSV-writing functions -----
+storage.save_csv:
+    24	def save_csv(path, book):
+    25	    f = open(path, "w")
+    26	    writer = csv.writer(f)
+    27	    writer.writerow(["date", "category", "amount", "note"])
+    28	    for expense in book.list_all():
+    29	        writer.writerow([expense.date, expense.category, expense.amount, expense.note])
+    30	    f.close()
+
+report.export_csv:
+    29	def export_csv(book, path):
+    30	    f = open(path, "w")
+    31	    writer = csv.writer(f)
+    32	    writer.writerow(["date", "category", "amount", "note"])
+    33	    for expense in book.list_all():
+    34	        writer.writerow([expense.date, expense.category, expense.amount, expense.note])
+    35	    f.close()
+
+save_csv source:
+def save_csv(path, book):
+    f = open(path, "w")
+    writer = csv.writer(f)
+    writer.writerow(["date", "category", "amount", "note"])
+    for expense in book.list_all():
+        writer.writerow([expense.date, expense.category, expense.amount, expense.note])
+    f.close()
+
+export_csv source:
+def export_csv(book, path):
+    f = open(path, "w")
+    writer = csv.writer(f)
+    writer.writerow(["date", "category", "amount", "note"])
+    for expense in book.list_all():
+        writer.writerow([expense.date, expense.category, expense.amount, expense.note])
+    f.close()
+
+Bodies are identical except for the function/argument names: False
+Both write the same header and the same four fields, confirmed by visual diff above.
+
+Format names in report.export:
+    57	def export(book, fmt, path=None, month=None):
+    58	    if fmt == "text" or fmt == "txt":
+    59	        return export_text(book, path)
+    60	    elif fmt == "csv":
+    61	        if not path:
+    62	            raise ValueError("csv export needs a path")
+    63	        export_csv(book, path)
+    64	        return path
+    65	    elif fmt == "monthly":
+    66	        if month is None:
+    67	            raise ValueError("monthly export needs a month")
+    68	        return export_monthly(book, month, path)
+    69	    else:
+    70	        raise ValueError("unknown format: " + str(fmt))
+
+Format names in cli.cmd_export:
+    56	def cmd_export(args):
+    57	    book = load_csv(args.file)
+    58	    out = report.export(book, args.format, path=args.out, month=args.month)
+    59	    if args.format == "text" or args.format == "txt" or args.format == "monthly":
+    60	        if args.out:
+    61	            print("wrote", args.out)
+    62	        else:
+    63	            print(out, end="")
+    64	    else:
+    65	        print("wrote", args.out)
+
+open()/close() without with:
+storage.py:10:    f = open(path, "r")
+storage.py:20:    f.close()
+storage.py:25:    f = open(path, "w")
+storage.py:30:    f.close()
+report.py:23:        f = open(path, "w")
+report.py:25:        f.close()
+report.py:30:    f = open(path, "w")
+report.py:35:    f.close()
+report.py:51:        f = open(path, "w")
+report.py:53:        f.close()
+
+Hypothetical 'json' format / wrote None was not tested: that format does not exist today.
+Current csv export without --out:
+Traceback (most recent call last):
+  File "/workspace/sis5/repo/cli.py", line 116, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/workspace/sis5/repo/cli.py", line 111, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/workspace/sis5/repo/cli.py", line 58, in cmd_export
+    out = report.export(book, args.format, path=args.out, month=args.month)
+  File "/workspace/sis5/repo/report.py", line 62, in export
+    raise ValueError("csv export needs a path")
+ValueError: csv export needs a path
+exit code: 1

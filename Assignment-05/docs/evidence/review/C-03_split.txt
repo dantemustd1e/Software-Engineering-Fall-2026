@@ -1,0 +1,28 @@
+C-03 split_evenly edge cases
+
+$ python cli.py --file /workspace/sis5/repo/sample.csv split --people 0
+Traceback (most recent call last):
+  File "/workspace/sis5/repo/cli.py", line 116, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/workspace/sis5/repo/cli.py", line 111, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/workspace/sis5/repo/cli.py", line 70, in cmd_split
+    print("each person pays:", book.split_evenly(args.people))
+                               ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspace/sis5/repo/expenses.py", line 59, in split_evenly
+    return self.total() / n
+           ~~~~~~~~~~~~~^~~
+ZeroDivisionError: float division by zero
+exit code: 1
+
+$ python cli.py --file /workspace/sis5/repo/sample.csv split --people 3
+each person pays: 4700.166666666667
+
+$ python cli.py --file /workspace/sis5/repo/sample.csv split --people -2
+each person pays: -7050.25
+
+$ python cli.py --file /workspace/sis5/repo/sample.csv total
+14100.5
+

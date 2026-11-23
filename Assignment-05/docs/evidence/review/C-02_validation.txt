@@ -1,0 +1,52 @@
+C-02 No input validation on add
+
+----- decimal comma -----
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c02.csv add --date 2026-11-01 --category food --amount 800,50 --note snacks
+Traceback (most recent call last):
+  File "/workspace/sis5/repo/cli.py", line 116, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/workspace/sis5/repo/cli.py", line 111, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/workspace/sis5/repo/cli.py", line 22, in cmd_add
+    book.add(args.date, args.category, args.amount, args.note)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/sis5/repo/expenses.py", line 22, in add
+    expense = Expense(str(date), str(category), float(amount), str(note))
+                                                ~~~~~^^^^^^^^
+ValueError: could not convert string to float: '800,50'
+exit code: 1
+
+----- nan -----
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c02_nan.csv add --date x --category food --amount nan
+added: x food nan 
+exit code: 0
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c02_nan.csv add --date 2026-11-01 --category food --amount 1200 --note coffee
+added: 2026-11-01 food 1200 coffee
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c02_nan.csv total
+nan
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/c02_nan.csv list
+x food nan 
+2026-11-01 food 1200.0 coffee
+total: nan
+
+----- inf -----
+added: 2026-11-01 food inf bad
+added: 2026-11-01 food 1200 coffee
+total after inf + 1200:
+inf
+
+----- negative and zero (already seen in phase 1, rechecked via CLI) -----
+added: 2026-11-01 food -500 refund
+added: 2026-11-01 food 0 free
+2026-11-01 food -500.0 refund
+2026-11-01 food 0.0 free
+total: -500.0
+
+----- odd date -----
+added: 01.11.2026 food 1200 coffee
+month: 2026-11
+count: 0
+total: 0.0
+

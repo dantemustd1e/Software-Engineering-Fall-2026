@@ -1,0 +1,46 @@
+S-02 Output path can overwrite the data file
+
+before, first lines of copy:
+date,category,amount,note
+2026-11-01,food,1200,coffee
+2026-11-01,food,3500,lunch at canteen
+size=251
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/s02.csv export --format text --out /workspace/sis5/evidence/review/scratch/s02.csv
+wrote /workspace/sis5/evidence/review/scratch/s02.csv
+exit code: 0
+
+after, the same path now contains a text report, not CSV data:
+Expense report
+----------------------------------------
+2026-11-01  food             1200.00  coffee
+2026-11-01  food             3500.00  lunch at canteen
+2026-11-03  transport         300.00  bus
+2026-11-05  food              800.50  snacks
+2026-11-10  study            4500.00  printouts and pens
+2026-11-15  other            2000.00  sim card
+2026-10-22  food             1800.00  dinner
+----------------------------------------
+Total: 14100.50
+
+By category:
+  food: 7300.50
+  transport: 300.00
+  study: 4500.00
+  other: 2000.00
+
+Trying to list that path now:
+Traceback (most recent call last):
+  File "/workspace/sis5/repo/cli.py", line 116, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/workspace/sis5/repo/cli.py", line 111, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/workspace/sis5/repo/cli.py", line 28, in cmd_list
+    book = load_csv(args.file)
+  File "/workspace/sis5/repo/storage.py", line 18, in load_csv
+    date, category, amount, note = row
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 4, got 1)
+exit code: 1

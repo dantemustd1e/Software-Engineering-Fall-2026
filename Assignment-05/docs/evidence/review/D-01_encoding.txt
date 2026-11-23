@@ -1,0 +1,35 @@
+D-01 Platform-dependent defaults
+
+$ python -c "import locale, sys; print('preferred=', locale.getpreferredencoding()); print('stdout=', sys.stdout.encoding); print('filesystem=', sys.getfilesystemencoding())"
+preferred= UTF-8
+stdout= utf-8
+filesystem= utf-8
+
+$ uname -srm
+Linux 6.12.113+ x86_64
+
+open() calls have no encoding= and no newline='':
+storage.py:10:    f = open(path, "r")
+storage.py:25:    f = open(path, "w")
+report.py:23:        f = open(path, "w")
+report.py:30:    f = open(path, "w")
+report.py:51:        f = open(path, "w")
+
+----- add a Kazakh note on this machine -----
+added: 2026-11-01 food 1200 қала
+added: 2026-11-01 food 800 кофе
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/d01.csv list
+2026-11-01 food 1200.0 қала
+2026-11-01 food 800.0 кофе
+total: 2000.0
+
+file repr / utf-8 bytes:
+b'date,category,amount,note\r\n2026-11-01,food,1200.0,\xd2\x9b\xd0\xb0\xd0\xbb\xd0\xb0\r\n2026-11-01,food,800.0,\xd0\xba\xd0\xbe\xd1\x84\xd0\xb5\r\n'
+decoded: date,category,amount,note
+2026-11-01,food,1200.0,қала
+2026-11-01,food,800.0,кофе
+
+
+This host is Linux with UTF-8, so the Kazakh note saved and loaded without error.
+I do not have a Windows / cp1251 environment here, so the encode error after truncate, and the csv newline='\r\r\n' issue, were not reproduced.

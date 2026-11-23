@@ -1,0 +1,30 @@
+A-01 Default data file is gitignored
+
+DEFAULT_FILE in cli.py:
+11:DEFAULT_FILE = "expenses.csv"
+75:    parser.add_argument("--file", default=DEFAULT_FILE, help="csv file with expenses")
+
+.gitignore:
+     1	__pycache__/
+     2	*.pyc
+     3	expenses.csv
+     4	report.txt
+
+$ git check-ignore -v expenses.csv
+.gitignore:3:expenses.csv	expenses.csv
+
+Does expenses.csv exist in the repo now (before the test add)?
+ls: cannot access 'expenses.csv': No such file or directory
+
+$ python cli.py add --date 2026-11-01 --category food --amount 1200 --note coffee
+added: 2026-11-01 food 1200 coffee
+
+$ ls -la expenses.csv
+-rw-r--r-- 1 box box 58 Nov 23 16:36 expenses.csv
+
+$ git status --short
+
+$ git check-ignore -v expenses.csv
+.gitignore:3:expenses.csv	expenses.csv
+
+Cleaning up the test file so the repo stays clean:

@@ -1,0 +1,43 @@
+A-02 Retries create duplicates; output is hard to parse
+
+Same add twice:
+added: 2026-11-01 food 1200 coffee at canteen
+added: 2026-11-01 food 1200 coffee at canteen
+
+$ python cli.py --file /workspace/sis5/evidence/review/scratch/a02.csv list
+2026-11-01 food 1200.0 coffee at canteen
+2026-11-01 food 1200.0 coffee at canteen
+total: 2400.0
+
+The two rows are identical; notes contain spaces, and fields are joined with spaces:
+2026-11-01 food 1200.0 coffee at canteen$
+2026-11-01 food 1200.0 coffee at canteen$
+
+Failing command exit code (list on a missing file):
+Traceback (most recent call last):
+  File "/workspace/sis5/repo/cli.py", line 116, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/workspace/sis5/repo/cli.py", line 111, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/workspace/sis5/repo/cli.py", line 28, in cmd_list
+    book = load_csv(args.file)
+  File "/workspace/sis5/repo/storage.py", line 10, in load_csv
+    f = open(path, "r")
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/sis5/evidence/review/scratch/missing.csv'
+exit code: 1
+
+main() has no try/except around args.func (cli.py:105-112), so errors are raw tracebacks.
+   105	def main(argv=None):
+   106	    parser = build_parser()
+   107	    args = parser.parse_args(argv)
+   108	    if not getattr(args, "command", None):
+   109	        parser.print_help()
+   110	        return 1
+   111	    args.func(args)
+   112	    return 0
+   113	
+   114	
+   115	if __name__ == "__main__":
+   116	    sys.exit(main())
