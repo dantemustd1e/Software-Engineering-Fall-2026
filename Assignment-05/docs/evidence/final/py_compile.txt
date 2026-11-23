@@ -1,0 +1,5 @@
+$ python -m py_compile expenses.py storage.py report.py cli.py tests/__init__.py tests/test_expenses.py
+
+py_compile finished with no output (all files compiled).
+
+exit code: 0

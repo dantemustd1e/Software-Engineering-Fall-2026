@@ -1,0 +1,54 @@
+Reproductions of baseline weaknesses. Not part of the unittest suite.
+Working directory: /workspace/sis5/repo
+
+----- float rounding -----
+$ python -c "from expenses import ExpenseBook; b=ExpenseBook(); b.add('2026-11-01','food',0.1,'a'); b.add('2026-11-01','food',0.2,'b'); print(repr(b.total()))"
+0.30000000000000004
+
+----- negative and zero amounts are accepted -----
+$ python -c "from expenses import ExpenseBook; b=ExpenseBook(); b.add('2026-11-01','food',-500,'refund'); b.add('2026-11-01','food',0,'free'); print(b.list_all()); print('total', b.total())"
+[Expense(date='2026-11-01', category='food', amount=-500.0, note='refund'), Expense(date='2026-11-01', category='food', amount=0.0, note='free')]
+total -500.0
+
+----- unvalidated date format (monthly_summary uses startswith) -----
+$ python -c "from expenses import ExpenseBook; b=ExpenseBook(); b.add('01.11.2026','food',1200,'coffee'); b.add('2026/11/01','transport',300,'bus'); s=b.monthly_summary('2026-11'); print('count', s['count'], 'total', s['total'], 'items', s['items'])"
+count 0 total 0.0 items []
+
+----- malformed CSV row crashes the loader -----
+$ cat /workspace/sis5/evidence/baseline/demo/bad.csv
+date,category,amount,note
+2026-11-01,food,1200
+$ python -c "from storage import load_csv; load_csv(r'/workspace/sis5/evidence/baseline/demo/bad.csv')"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from storage import load_csv; load_csv(r'/workspace/sis5/evidence/baseline/demo/bad.csv')
+                                  ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/sis5/repo/storage.py", line 18, in load_csv
+    date, category, amount, note = row
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 4, got 3)
+
+----- save_csv overwrites an existing file with no backup -----
+before:
+date,category,amount,note
+2026-11-01,food,1200.0,coffee
+
+after:
+date,category,amount,note
+2026-11-02,other,1.0,replacement
+
+
+----- split_evenly with 0 people -----
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from expenses import ExpenseBook; b=ExpenseBook(); b.add('2026-11-01','food',1200,'coffee'); print(b.split_evenly(0))
+                                                                                                       ~~~~~~~~~~~~~~^^^
+  File "/workspace/sis5/repo/expenses.py", line 59, in split_evenly
+    return self.total() / n
+           ~~~~~~~~~~~~~^~~
+ZeroDivisionError: float division by zero
+
+----- README documents python main.py, but that file does not exist -----
+$ ls main.py
+ls: cannot access 'main.py': No such file or directory
+

@@ -1,0 +1,105 @@
+$ ruff check .
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> cli.py:3:1
+   |
+ 1 |   """Command line entry point for the expense calculator."""
+ 2 |
+ 3 | / import argparse
+ 4 | | import os
+ 5 | | import sys
+ 6 | |
+ 7 | | from expenses import ExpenseBook
+ 8 | | from storage import load_csv, save_csv
+ 9 | | import report
+   | |_____________^
+10 |
+11 |   DEFAULT_FILE = "expenses.csv"
+   |
+help: Organize imports
+   |
+6  |
+7  + import report
+8  | from expenses import ExpenseBook
+9  | from storage import load_csv, save_csv
+   - import report
+10 |
+   |
+
+UP032 [*] Use f-string instead of `format` call
+  --> report.py:15:18
+   |
+13 |         lines.append(format_line(expense))
+14 |     lines.append("-" * 40)
+15 |     lines.append("Total: {:.2f}".format(book.total()))
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+16 |     lines.append("")
+17 |     lines.append("By category:")
+   |
+help: Convert to f-string
+   |
+14 |     lines.append("-" * 40)
+   -     lines.append("Total: {:.2f}".format(book.total()))
+15 +     lines.append(f"Total: {book.total():.2f}")
+16 |     lines.append("")
+   |
+
+SIM115 Use a context manager for opening files
+  --> report.py:23:13
+   |
+21 |     text = "\n".join(lines) + "\n"
+22 |     if path:
+23 |         f = open(path, "w")
+   |             ^^^^
+24 |         f.write(text)
+25 |         f.close()
+   |
+
+SIM115 Use a context manager for opening files
+  --> report.py:30:9
+   |
+29 | def export_csv(book, path):
+30 |     f = open(path, "w")
+   |         ^^^^
+31 |     writer = csv.writer(f)
+32 |     writer.writerow(["date", "category", "amount", "note"])
+   |
+
+SIM115 Use a context manager for opening files
+  --> report.py:51:13
+   |
+49 |     text = "\n".join(lines) + "\n"
+50 |     if path:
+51 |         f = open(path, "w")
+   |             ^^^^
+52 |         f.write(text)
+53 |         f.close()
+   |
+
+SIM115 Use a context manager for opening files
+  --> storage.py:31:9
+   |
+30 | def save_csv(path, book):
+31 |     f = open(path, "w")
+   |         ^^^^
+32 |     writer = csv.writer(f)
+33 |     writer.writerow(["date", "category", "amount", "note"])
+   |
+
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+  --> tests/test_expenses.py:93:13
+   |
+91 |               ("2026-13-01", "100"),
+92 |           ]:
+93 | /             with self.subTest(date=date, amount=amount):
+94 | |                 with self.assertRaises(ValueError):
+   | |___________________________________________________^
+95 |                       book.add(date, "food", amount)
+96 |           self.assertEqual(book.list_all(), [])
+   |
+help: Combine `with` statements
+
+Found 7 errors.
+[*] 2 fixable with `--fix`.
+
+exit code: 1

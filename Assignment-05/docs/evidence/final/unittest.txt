@@ -1,0 +1,21 @@
+$ python -m unittest discover -v
+
+test_missing_file_and_bad_amount (tests.test_expenses.CliTests.test_missing_file_and_bad_amount) ... ok
+test_add_and_list (tests.test_expenses.ExpenseBookTests.test_add_and_list) ... ok
+test_add_rejects_invalid_input (tests.test_expenses.ExpenseBookTests.test_add_rejects_invalid_input) ... ok
+test_csv_roundtrip (tests.test_expenses.ExpenseBookTests.test_csv_roundtrip) ... ok
+test_empty_book (tests.test_expenses.ExpenseBookTests.test_empty_book) ... ok
+test_export_csv_writes_file (tests.test_expenses.ExpenseBookTests.test_export_csv_writes_file) ... ok
+test_export_dispatch (tests.test_expenses.ExpenseBookTests.test_export_dispatch) ... ok
+test_export_text_contains_total (tests.test_expenses.ExpenseBookTests.test_export_text_contains_total) ... ok
+test_load_csv_skips_blank_lines_and_rejects_short_rows (tests.test_expenses.ExpenseBookTests.test_load_csv_skips_blank_lines_and_rejects_short_rows) ... ok
+test_monthly_summary (tests.test_expenses.ExpenseBookTests.test_monthly_summary) ... ok
+test_total (tests.test_expenses.ExpenseBookTests.test_total) ... ok
+test_totals_by_category (tests.test_expenses.ExpenseBookTests.test_totals_by_category) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.007s
+
+OK
+
+exit code: 0

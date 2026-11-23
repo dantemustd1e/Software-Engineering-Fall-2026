@@ -1,0 +1,19 @@
+Baseline checks for /workspace/sis5/repo
+Recorded at: 2026-11-23 16:27:42 +05 (UTC+05:00)
+Working directory: /workspace/sis5/repo
+
+The unversioned command 'python' is not on the default system PATH.
+All commands below were run with PATH starting with /workspace/venv6/bin
+so that 'python' resolves to the venv interpreter.
+
+$ which python
+/workspace/venv6/bin/python
+$ python --version
+Python 3.13.5
+$ which ruff
+/workspace/venv6/bin/ruff
+$ ruff --version
+ruff 0.17.6
+$ python -m pyflakes --version
+4.1.0 Python 3.13.5 on Linux
+

@@ -1,4 +1,3 @@
 __pycache__/
 *.pyc
-expenses.csv
-report.txt
+.ruff_cache/

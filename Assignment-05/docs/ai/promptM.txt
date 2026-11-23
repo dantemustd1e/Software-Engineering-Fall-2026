@@ -1,0 +1,22 @@
+Hi again. I checked your findings myself. I ran the commands; I did not only read the code.
+
+I confirmed C-02 and C-05, and I want to fix only these two risks now:
+
+1) C-02, in expenses.py (ExpenseBook.add) and cli.py. add() accepts nan, inf and negative amounts, a date like 01.11.2026 is stored, and --amount 800,50 crashes with a traceback.
+
+2) C-05, in storage.py (load_csv) and cli.py. A blank line or a short row makes load_csv raise ValueError, and list/total crash with FileNotFoundError when the file does not exist, while add creates a new file.
+
+Please give me:
+(a) a minimal diff for C-02 and one new unit test;
+(b) a minimal diff for C-05 and one new unit test;
+(c) a small Strategy-style change for report export in report.py (and cli.py only if needed). I think a dict of format name -> function is enough, not a class hierarchy. If you think the if/elif should stay, explain why and do not refactor it.
+
+Keep the diffs small. Use the standard library only. Do not add dependencies. Do not rewrite the whole project. Please do not change any files yourself; only show the diffs so I can review them.
+
+These are my repository rules from AGENTS.md (pasted because claude.ai does not load it automatically):
+
+- Standard library only; do not add packages unless I agree.
+- Keep changes small. After a change I will run: python -m unittest discover -v
+- Do not edit a test only to make a weak patch pass. If you add validation or a new error, add a test for it.
+- Forbidden: secrets, deploys, destructive commands (rm -rf, git reset --hard, wiping a CSV file), and unreviewed dependency changes.
+- Show the diff and wait; do not apply it yourself. Use a scratch CSV, not sample.csv or expenses.csv, in any example command.

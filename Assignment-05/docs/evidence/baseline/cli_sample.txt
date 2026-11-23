@@ -1,0 +1,81 @@
+Sample CLI run. Commands used python from /workspace/venv6.
+Data file for this demo: /workspace/sis5/evidence/baseline/demo/expenses.csv (copy of sample.csv).
+Working directory: /workspace/sis5/repo
+
+$ python cli.py --help
+usage: cli.py [-h] [--file FILE]
+              {add,list,total,by-category,monthly,export,split} ...
+
+Simple expense calculator
+
+positional arguments:
+  {add,list,total,by-category,monthly,export,split}
+
+options:
+  -h, --help            show this help message and exit
+  --file FILE           csv file with expenses
+
+$ python cli.py --file /workspace/sis5/evidence/baseline/demo/expenses.csv list
+2026-11-01 food 1200.0 coffee
+2026-11-01 food 3500.0 lunch at canteen
+2026-11-03 transport 300.0 bus
+2026-11-05 food 800.5 snacks
+2026-11-10 study 4500.0 printouts and pens
+2026-11-15 other 2000.0 sim card
+2026-10-22 food 1800.0 dinner
+total: 14100.5
+
+$ python cli.py --file /workspace/sis5/evidence/baseline/demo/expenses.csv total
+14100.5
+
+$ python cli.py --file /workspace/sis5/evidence/baseline/demo/expenses.csv by-category
+food: 7300.5
+transport: 300.0
+study: 4500.0
+other: 2000.0
+
+$ python cli.py --file /workspace/sis5/evidence/baseline/demo/expenses.csv monthly --month 2026-11
+month: 2026-11
+count: 6
+total: 12300.5
+  food: 5500.5
+  transport: 300.0
+  study: 4500.0
+  other: 2000.0
+
+$ python cli.py --file /workspace/sis5/evidence/baseline/demo/expenses.csv split --people 2
+each person pays: 7050.25
+
+$ python cli.py --file /workspace/sis5/evidence/baseline/demo/expenses.csv export --format text --out /workspace/sis5/evidence/baseline/demo/report.txt
+wrote /workspace/sis5/evidence/baseline/demo/report.txt
+
+$ cat /workspace/sis5/evidence/baseline/demo/report.txt
+Expense report
+----------------------------------------
+2026-11-01  food             1200.00  coffee
+2026-11-01  food             3500.00  lunch at canteen
+2026-11-03  transport         300.00  bus
+2026-11-05  food              800.50  snacks
+2026-11-10  study            4500.00  printouts and pens
+2026-11-15  other            2000.00  sim card
+2026-10-22  food             1800.00  dinner
+----------------------------------------
+Total: 14100.50
+
+By category:
+  food: 7300.50
+  transport: 300.00
+  study: 4500.00
+  other: 2000.00
+
+$ python cli.py --file /workspace/sis5/evidence/baseline/demo/new.csv add --date 2026-11-01 --category food --amount 1200 --note coffee
+added: 2026-11-01 food 1200 coffee
+
+$ python cli.py --file /workspace/sis5/evidence/baseline/demo/new.csv add --date 2026-11-03 --category transport --amount 300 --note bus
+added: 2026-11-03 transport 300 bus
+
+$ python cli.py --file /workspace/sis5/evidence/baseline/demo/new.csv list
+2026-11-01 food 1200.0 coffee
+2026-11-03 transport 300.0 bus
+total: 1500.0
+

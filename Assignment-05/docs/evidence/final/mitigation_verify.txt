@@ -1,0 +1,44 @@
+Verification of C-02 and C-05 after the patches.
+Working directory: /workspace/sis5/repo
+
+----- missing file: list should exit 0 and not create the file -----
+$ python cli.py --file /workspace/sis5/evidence/final/scratch/scratch.csv list
+total: 0.0
+exit code: 0
+file exists? ls: cannot access '/workspace/sis5/evidence/final/scratch/scratch.csv': No such file or directory
+
+----- decimal comma: one error line, exit 1, no file created -----
+$ python cli.py --file /workspace/sis5/evidence/final/scratch/scratch.csv add --date 2026-11-01 --category food --amount 800,50
+error: invalid amount '800,50', use a plain number like 800.50
+exit code: 1
+file exists? ls: cannot access '/workspace/sis5/evidence/final/scratch/scratch.csv': No such file or directory
+
+----- nan is rejected -----
+error: invalid date 'x', expected YYYY-MM-DD
+exit code: 1
+
+----- valid add still works -----
+added: 2026-11-01 food 800.50 snacks
+800.5
+
+----- blank line is skipped; short row is rejected with a line number -----
+1200.0
+exit code: 0
+error: /workspace/sis5/evidence/final/scratch/bad.csv, line 2: expected 4 columns, got 2
+exit code: 1
+
+----- acceptance criteria: original tests only -----
+test_add_and_list (tests.test_expenses.ExpenseBookTests.test_add_and_list) ... ok
+test_total (tests.test_expenses.ExpenseBookTests.test_total) ... ok
+test_totals_by_category (tests.test_expenses.ExpenseBookTests.test_totals_by_category) ... ok
+test_monthly_summary (tests.test_expenses.ExpenseBookTests.test_monthly_summary) ... ok
+test_csv_roundtrip (tests.test_expenses.ExpenseBookTests.test_csv_roundtrip) ... ok
+test_empty_book (tests.test_expenses.ExpenseBookTests.test_empty_book) ... ok
+test_export_text_contains_total (tests.test_expenses.ExpenseBookTests.test_export_text_contains_total) ... ok
+test_export_csv_writes_file (tests.test_expenses.ExpenseBookTests.test_export_csv_writes_file) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.003s
+
+OK
+

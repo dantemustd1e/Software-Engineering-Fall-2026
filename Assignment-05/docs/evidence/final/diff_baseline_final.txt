@@ -1,0 +1,402 @@
+diff --git a/AGENTS.md b/AGENTS.md
+new file mode 100644
+index 0000000..c0b271d
+--- /dev/null
++++ b/AGENTS.md
+@@ -0,0 +1,73 @@
++# AGENTS.md
++
++Instructions for a coding assistant that works on this repository.
++
++## Purpose
++
++This is a small command-line expense calculator. It stores personal expenses in KZT in a CSV file and can list them, print a total, group totals by category, show a monthly summary, export a report, and split the total between people.
++
++Do not use real personal data or secrets in sample rows. The current samples (coffee, bus, and so on) are fictional.
++
++## Architecture
++
++- `expenses.py` — `Expense` model and the in-memory `ExpenseBook` (add, list, totals, monthly summary, split).
++- `storage.py` — load and save the CSV file.
++- `report.py` — text, CSV and monthly export.
++- `cli.py` — the command-line entry point (`python cli.py ...`). There is no `main.py`.
++- `tests/test_expenses.py` — unittest tests.
++- `sample.csv` — fictional sample data. Prefer a scratch copy when trying write commands.
++
++## Setup
++
++- Python 3, standard library only. There is no `requirements.txt` and no third-party package.
++- Run commands from the repository root so that `import expenses` works.
++- Helpful commands:
++  - `python cli.py --help`
++  - `python cli.py --file sample.csv list`
++  - `python -m unittest discover -v`
++  - `python -m py_compile expenses.py storage.py report.py cli.py tests/test_expenses.py`
++
++## Safe commands
++
++These are safe to run without asking:
++
++- `python -m unittest discover -v`
++- `python -m py_compile` on the project files
++- `python cli.py --help`
++- `python cli.py --file <scratch.csv> list|total|by-category|monthly|export|split` when `<scratch.csv>` is a temporary copy, not the user's real file
++
++Ask the human first before:
++
++- writing to `sample.csv` or to the default `expenses.csv`
++- adding or changing a dependency
++- renaming or deleting source files
++- running a large rewrite
++
++## Coding conventions
++
++- Keep the code in the standard library. Do not add packages unless the human agrees.
++- Keep changes small and close to the current style.
++- Dates should be `YYYY-MM-DD`. Amounts are in KZT.
++- Tests use `unittest` (not pytest). Use a temporary file for save/load tests.
++
++## Test expectations
++
++- After a change, run `python -m unittest discover -v` and show the real output.
++- Do not edit a test only to make a weak patch pass.
++- If you add behaviour (validation, a new error message, a new export format), add a test for it.
++- The acceptance criteria in the assignment notes must still hold: add/list keeps the same fields, totals are correct for whole-tenge amounts, monthly summary works for `YYYY-MM-DD` dates, and a CSV round-trip keeps the same fields.
++
++## Forbidden actions
++
++- Do not add, commit, print or ask for secrets, tokens, passwords, API keys or real personal data.
++- Do not deploy this project to any server or production environment.
++- Do not run destructive commands, including `rm -rf`, `git reset --hard`, `git checkout --` on files you did not just create, `git push --force`, or wiping a CSV data file.
++- Do not add or change dependencies without a human review.
++- Do not create a git commit unless the human asked for it.
++
++## Review gates
++
++- For any non-trivial change, show the diff and wait for approval before applying it.
++- A task is not finished until the tests have been run and the output is shown.
++- Do not tag a release or describe the project as ready to ship without a human decision.
++- If a command could overwrite a data file, use a scratch copy first.
+diff --git a/README.md b/README.md
+index fc49518..93ff294 100644
+--- a/README.md
++++ b/README.md
+@@ -1,21 +1,24 @@
+ # Expense calculator
+ 
+ A small command line tool to keep track of personal expenses in KZT.
++It uses only the Python standard library. No extra packages are required.
++Python 3.10 or newer is recommended.
+ 
+ ## How to run
+ 
+-Python 3.10 or newer is required.
++Run commands from this folder:
+ 
+-    python main.py add --date 2026-11-01 --category food --amount 1200 --note coffee
+-    python main.py list
+-    python main.py total
+-    python main.py by-category
+-    python main.py monthly --month 2026-11
+-    python main.py export --format text --out report.txt
++    python cli.py add --date 2026-11-01 --category food --amount 1200 --note coffee
++    python cli.py list
++    python cli.py total
++    python cli.py by-category
++    python cli.py monthly --month 2026-11
++    python cli.py export --format text --out report.txt
++    python cli.py split --people 2
+ 
+-The default data file is `expenses.csv` in the current folder.
++The default data file is `expenses.csv` in the current folder. You can point to another file with `--file`, for example `--file sample.csv`. For experiments, use a scratch copy, not `sample.csv`.
+ 
+-Dates should be written as YYYY-MM-DD. Amounts are in KZT.
++Dates must be written as YYYY-MM-DD. Amounts are in KZT and must be a plain number, 0 or more (use a dot, not a comma: `800.50`).
+ 
+ ## Tests
+ 
+diff --git a/cli.py b/cli.py
+index 3d40925..f0d42b3 100644
+--- a/cli.py
++++ b/cli.py
+@@ -25,26 +25,26 @@ def cmd_add(args):
+ 
+ 
+ def cmd_list(args):
+-    book = load_csv(args.file)
++    book = load_or_empty(args.file)
+     for expense in book.list_all():
+         print(expense.date, expense.category, expense.amount, expense.note)
+     print("total:", book.total())
+ 
+ 
+ def cmd_total(args):
+-    book = load_csv(args.file)
++    book = load_or_empty(args.file)
+     print(book.total())
+ 
+ 
+ def cmd_by_category(args):
+-    book = load_csv(args.file)
++    book = load_or_empty(args.file)
+     totals = book.totals_by_category()
+     for category in totals:
+         print(f"{category}: {totals[category]}")
+ 
+ 
+ def cmd_monthly(args):
+-    book = load_csv(args.file)
++    book = load_or_empty(args.file)
+     summary = book.monthly_summary(args.month)
+     print("month:", summary["month"])
+     print("count:", summary["count"])
+@@ -54,19 +54,16 @@ def cmd_monthly(args):
+ 
+ 
+ def cmd_export(args):
+-    book = load_csv(args.file)
++    book = load_or_empty(args.file)
+     out = report.export(book, args.format, path=args.out, month=args.month)
+-    if args.format == "text" or args.format == "txt" or args.format == "monthly":
+-        if args.out:
+-            print("wrote", args.out)
+-        else:
+-            print(out, end="")
+-    else:
++    if args.out:
+         print("wrote", args.out)
++    else:
++        print(out, end="")
+ 
+ 
+ def cmd_split(args):
+-    book = load_csv(args.file)
++    book = load_or_empty(args.file)
+     print("each person pays:", book.split_evenly(args.people))
+ 
+ 
+@@ -108,7 +105,11 @@ def main(argv=None):
+     if not getattr(args, "command", None):
+         parser.print_help()
+         return 1
+-    args.func(args)
++    try:
++        args.func(args)
++    except ValueError as error:
++        print("error:", error, file=sys.stderr)
++        return 1
+     return 0
+ 
+ 
+diff --git a/expenses.py b/expenses.py
+index 1486035..138b354 100644
+--- a/expenses.py
++++ b/expenses.py
+@@ -1,6 +1,8 @@
+ """In-memory expense book. Amounts are stored in KZT."""
+ 
++import math
+ from dataclasses import dataclass
++from datetime import datetime
+ 
+ 
+ @dataclass
+@@ -19,7 +21,20 @@ class ExpenseBook:
+             self.items = list(items)
+ 
+     def add(self, date, category, amount, note=""):
+-        expense = Expense(str(date), str(category), float(amount), str(note))
++        date = str(date)
++        try:
++            if len(date) != 10:
++                raise ValueError
++            datetime.strptime(date, "%Y-%m-%d")
++        except ValueError:
++            raise ValueError(f"invalid date {date!r}, expected YYYY-MM-DD") from None
++        try:
++            value = float(amount)
++        except (TypeError, ValueError):
++            raise ValueError(f"invalid amount {amount!r}, use a plain number like 800.50") from None
++        if not math.isfinite(value) or value < 0:
++            raise ValueError(f"invalid amount {amount!r}, must be a finite number, 0 or more")
++        expense = Expense(date, str(category), value, str(note))
+         self.items.append(expense)
+         return expense
+ 
+diff --git a/report.py b/report.py
+index 3f59b68..0cac9df 100644
+--- a/report.py
++++ b/report.py
+@@ -54,17 +54,34 @@ def export_monthly(book, month, path=None):
+     return text
+ 
+ 
++def _export_csv(book, path, month):
++    if not path:
++        raise ValueError("csv export needs a path")
++    export_csv(book, path)
++    return path
++
++
++def _export_monthly(book, path, month):
++    if month is None:
++        raise ValueError("monthly export needs a month")
++    return export_monthly(book, month, path)
++
++
++def _export_text(book, path, month):
++    return export_text(book, path)
++
++
++EXPORTERS = {
++    "text": _export_text,
++    "txt": _export_text,
++    "csv": _export_csv,
++    "monthly": _export_monthly,
++}
++
++
+ def export(book, fmt, path=None, month=None):
+-    if fmt == "text" or fmt == "txt":
+-        return export_text(book, path)
+-    elif fmt == "csv":
+-        if not path:
+-            raise ValueError("csv export needs a path")
+-        export_csv(book, path)
+-        return path
+-    elif fmt == "monthly":
+-        if month is None:
+-            raise ValueError("monthly export needs a month")
+-        return export_monthly(book, month, path)
+-    else:
+-        raise ValueError("unknown format: " + str(fmt))
++    try:
++        exporter = EXPORTERS[fmt]
++    except KeyError:
++        raise ValueError("unknown format: " + str(fmt)) from None
++    return exporter(book, path, month)
+diff --git a/storage.py b/storage.py
+index ccedddd..0a541c6 100644
+--- a/storage.py
++++ b/storage.py
+@@ -7,17 +7,23 @@ from expenses import ExpenseBook
+ 
+ def load_csv(path):
+     book = ExpenseBook()
+-    f = open(path, "r")
+-    reader = csv.reader(f)
+-    first = True
+-    for row in reader:
+-        if first:
+-            first = False
+-            if row and row[0].lower() == "date":
++    with open(path, "r") as f:
++        reader = csv.reader(f)
++        first = True
++        for row in reader:
++            if not row:
+                 continue
+-        date, category, amount, note = row
+-        book.add(date, category, amount, note)
+-    f.close()
++            if first:
++                first = False
++                if row[0].lower() == "date":
++                    continue
++            if len(row) != 4:
++                raise ValueError(f"{path}, line {reader.line_num}: expected 4 columns, got {len(row)}")
++            date, category, amount, note = row
++            try:
++                book.add(date, category, amount, note)
++            except ValueError as error:
++                raise ValueError(f"{path}, line {reader.line_num}: {error}") from error
+     return book
+ 
+ 
+diff --git a/tests/test_expenses.py b/tests/test_expenses.py
+index 02f2768..373d77d 100644
+--- a/tests/test_expenses.py
++++ b/tests/test_expenses.py
+@@ -1,12 +1,15 @@
+ """Basic tests for the expense calculator."""
+ 
++import contextlib
++import io
+ import os
+ import tempfile
+ import unittest
+ 
++import cli
++import report
+ from expenses import ExpenseBook
+ from storage import load_csv, save_csv
+-import report
+ 
+ 
+ class ExpenseBookTests(unittest.TestCase):
+@@ -76,6 +79,65 @@ class ExpenseBookTests(unittest.TestCase):
+         finally:
+             os.remove(path)
+ 
++    def test_add_rejects_invalid_input(self):
++        book = ExpenseBook()
++        for date, amount in [
++            ("2026-11-01", "nan"),
++            ("2026-11-01", "inf"),
++            ("2026-11-01", "-5"),
++            ("2026-11-01", "800,50"),
++            ("01.11.2026", "100"),
++            ("2026-1-5", "100"),
++            ("2026-13-01", "100"),
++        ]:
++            with self.subTest(date=date, amount=amount):
++                with self.assertRaises(ValueError):
++                    book.add(date, "food", amount)
++        self.assertEqual(book.list_all(), [])
++        book.add("2026-11-02", "food", "800.50")
++        self.assertEqual(book.list_all()[0].amount, 800.5)
++        # Zero is allowed on purpose (a free item). Claude's patch used value < 0.
++        book.add("2026-11-03", "food", "0")
++        self.assertEqual(book.list_all()[1].amount, 0.0)
++
++    def test_export_dispatch(self):
++        self.assertEqual(report.export(self.book, "txt"), report.export(self.book, "text"))
++        self.assertIn("Monthly report for 2026-11", report.export(self.book, "monthly", month="2026-11"))
++        with self.assertRaises(ValueError):
++            report.export(self.book, "monthly")
++        with self.assertRaises(ValueError):
++            report.export(self.book, "pdf")
++
++
++    def test_load_csv_skips_blank_lines_and_rejects_short_rows(self):
++        with tempfile.TemporaryDirectory() as folder:
++            good = os.path.join(folder, "good.csv")
++            with open(good, "w") as handle:
++                handle.write("date,category,amount,note\n\n2026-11-01,food,1200,coffee\n\n")
++            self.assertEqual(len(load_csv(good).list_all()), 1)
++
++            short = os.path.join(folder, "short.csv")
++            with open(short, "w") as handle:
++                handle.write("date,category,amount,note\n2026-11-01,food,1200\n")
++            with self.assertRaises(ValueError) as caught:
++                load_csv(short)
++            self.assertIn("line 2", str(caught.exception))
++
++
++class CliTests(unittest.TestCase):
++    def test_missing_file_and_bad_amount(self):
++        with tempfile.TemporaryDirectory() as folder:
++            path = os.path.join(folder, "scratch.csv")
++            out, err = io.StringIO(), io.StringIO()
++            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
++                listed = cli.main(["--file", path, "list"])
++                added = cli.main(["--file", path, "add", "--date", "2026-11-01",
++                                  "--category", "food", "--amount", "800,50"])
++            self.assertEqual(listed, 0)
++            self.assertEqual(added, 1)
++            self.assertIn("invalid amount", err.getvalue())
++            self.assertFalse(os.path.exists(path))
++
+ 
+ if __name__ == "__main__":
+     unittest.main()

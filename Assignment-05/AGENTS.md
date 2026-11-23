@@ -20,7 +20,7 @@ Do not use real personal data or secrets in sample rows. The current samples (co
 ## Setup
 
 - Python 3, standard library only. There is no `requirements.txt` and no third-party package.
-- Run commands from the repository root so that `import expenses` works.
+- Run commands from this folder (`Assignment-05`) so that `import expenses` works.
 - Helpful commands:
   - `python cli.py --help`
   - `python cli.py --file sample.csv list`

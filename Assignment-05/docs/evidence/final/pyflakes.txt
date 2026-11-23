@@ -1,0 +1,5 @@
+$ python -m pyflakes expenses.py storage.py report.py cli.py tests/__init__.py tests/test_expenses.py
+
+pyflakes finished with no output (no issues reported).
+
+exit code: 0
