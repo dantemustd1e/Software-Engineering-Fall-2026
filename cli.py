@@ -105,7 +105,11 @@ def main(argv=None):
     if not getattr(args, "command", None):
         parser.print_help()
         return 1
-    args.func(args)
+    try:
+        args.func(args)
+    except ValueError as error:
+        print("error:", error, file=sys.stderr)
+        return 1
     return 0
 
 

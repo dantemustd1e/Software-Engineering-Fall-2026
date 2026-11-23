@@ -76,6 +76,27 @@ class ExpenseBookTests(unittest.TestCase):
         finally:
             os.remove(path)
 
+    def test_add_rejects_invalid_input(self):
+        book = ExpenseBook()
+        for date, amount in [
+            ("2026-11-01", "nan"),
+            ("2026-11-01", "inf"),
+            ("2026-11-01", "-5"),
+            ("2026-11-01", "800,50"),
+            ("01.11.2026", "100"),
+            ("2026-1-5", "100"),
+            ("2026-13-01", "100"),
+        ]:
+            with self.subTest(date=date, amount=amount):
+                with self.assertRaises(ValueError):
+                    book.add(date, "food", amount)
+        self.assertEqual(book.list_all(), [])
+        book.add("2026-11-02", "food", "800.50")
+        self.assertEqual(book.list_all()[0].amount, 800.5)
+        # Zero is allowed on purpose (a free item). Claude's patch used value < 0.
+        book.add("2026-11-03", "food", "0")
+        self.assertEqual(book.list_all()[1].amount, 0.0)
+
     def test_export_dispatch(self):
         self.assertEqual(report.export(self.book, "txt"), report.export(self.book, "text"))
         self.assertIn("Monthly report for 2026-11", report.export(self.book, "monthly", month="2026-11"))

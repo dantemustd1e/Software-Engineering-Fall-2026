@@ -1,6 +1,8 @@
 """In-memory expense book. Amounts are stored in KZT."""
 
+import math
 from dataclasses import dataclass
+from datetime import datetime
 
 
 @dataclass
@@ -19,7 +21,20 @@ class ExpenseBook:
             self.items = list(items)
 
     def add(self, date, category, amount, note=""):
-        expense = Expense(str(date), str(category), float(amount), str(note))
+        date = str(date)
+        try:
+            if len(date) != 10:
+                raise ValueError
+            datetime.strptime(date, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError(f"invalid date {date!r}, expected YYYY-MM-DD") from None
+        try:
+            value = float(amount)
+        except (TypeError, ValueError):
+            raise ValueError(f"invalid amount {amount!r}, use a plain number like 800.50") from None
+        if not math.isfinite(value) or value < 0:
+            raise ValueError(f"invalid amount {amount!r}, must be a finite number, 0 or more")
+        expense = Expense(date, str(category), value, str(note))
         self.items.append(expense)
         return expense
 
