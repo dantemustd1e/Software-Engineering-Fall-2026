@@ -1,12 +1,15 @@
 """Basic tests for the expense calculator."""
 
+import contextlib
+import io
 import os
 import tempfile
 import unittest
 
+import cli
+import report
 from expenses import ExpenseBook
 from storage import load_csv, save_csv
-import report
 
 
 class ExpenseBookTests(unittest.TestCase):
@@ -104,6 +107,36 @@ class ExpenseBookTests(unittest.TestCase):
             report.export(self.book, "monthly")
         with self.assertRaises(ValueError):
             report.export(self.book, "pdf")
+
+
+    def test_load_csv_skips_blank_lines_and_rejects_short_rows(self):
+        with tempfile.TemporaryDirectory() as folder:
+            good = os.path.join(folder, "good.csv")
+            with open(good, "w") as handle:
+                handle.write("date,category,amount,note\n\n2026-11-01,food,1200,coffee\n\n")
+            self.assertEqual(len(load_csv(good).list_all()), 1)
+
+            short = os.path.join(folder, "short.csv")
+            with open(short, "w") as handle:
+                handle.write("date,category,amount,note\n2026-11-01,food,1200\n")
+            with self.assertRaises(ValueError) as caught:
+                load_csv(short)
+            self.assertIn("line 2", str(caught.exception))
+
+
+class CliTests(unittest.TestCase):
+    def test_missing_file_and_bad_amount(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "scratch.csv")
+            out, err = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                listed = cli.main(["--file", path, "list"])
+                added = cli.main(["--file", path, "add", "--date", "2026-11-01",
+                                  "--category", "food", "--amount", "800,50"])
+            self.assertEqual(listed, 0)
+            self.assertEqual(added, 1)
+            self.assertIn("invalid amount", err.getvalue())
+            self.assertFalse(os.path.exists(path))
 
 
 if __name__ == "__main__":

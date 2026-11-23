@@ -7,17 +7,23 @@ from expenses import ExpenseBook
 
 def load_csv(path):
     book = ExpenseBook()
-    f = open(path, "r")
-    reader = csv.reader(f)
-    first = True
-    for row in reader:
-        if first:
-            first = False
-            if row and row[0].lower() == "date":
+    with open(path, "r") as f:
+        reader = csv.reader(f)
+        first = True
+        for row in reader:
+            if not row:
                 continue
-        date, category, amount, note = row
-        book.add(date, category, amount, note)
-    f.close()
+            if first:
+                first = False
+                if row[0].lower() == "date":
+                    continue
+            if len(row) != 4:
+                raise ValueError(f"{path}, line {reader.line_num}: expected 4 columns, got {len(row)}")
+            date, category, amount, note = row
+            try:
+                book.add(date, category, amount, note)
+            except ValueError as error:
+                raise ValueError(f"{path}, line {reader.line_num}: {error}") from error
     return book
 
 

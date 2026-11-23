@@ -25,26 +25,26 @@ def cmd_add(args):
 
 
 def cmd_list(args):
-    book = load_csv(args.file)
+    book = load_or_empty(args.file)
     for expense in book.list_all():
         print(expense.date, expense.category, expense.amount, expense.note)
     print("total:", book.total())
 
 
 def cmd_total(args):
-    book = load_csv(args.file)
+    book = load_or_empty(args.file)
     print(book.total())
 
 
 def cmd_by_category(args):
-    book = load_csv(args.file)
+    book = load_or_empty(args.file)
     totals = book.totals_by_category()
     for category in totals:
         print(f"{category}: {totals[category]}")
 
 
 def cmd_monthly(args):
-    book = load_csv(args.file)
+    book = load_or_empty(args.file)
     summary = book.monthly_summary(args.month)
     print("month:", summary["month"])
     print("count:", summary["count"])
@@ -54,7 +54,7 @@ def cmd_monthly(args):
 
 
 def cmd_export(args):
-    book = load_csv(args.file)
+    book = load_or_empty(args.file)
     out = report.export(book, args.format, path=args.out, month=args.month)
     if args.out:
         print("wrote", args.out)
@@ -63,7 +63,7 @@ def cmd_export(args):
 
 
 def cmd_split(args):
-    book = load_csv(args.file)
+    book = load_or_empty(args.file)
     print("each person pays:", book.split_evenly(args.people))
 
 
